@@ -44,6 +44,8 @@ History:
 2018-01-15 pvbouwel Add QUOTE_IDENT for identifiers (schema,table and column names)
 2018-05-30 adedotua Add table_id column
 2018-05-30 adedotua Added ENCODE RAW keyword for non compressed columns (Issue #308)
+2018-10-12 dmenin Added table ownership to the script (as an alter table statment as the owner of the table is the issuer of the CREATE TABLE command)
+2019-03-24 adedotua added filter for diststyle AUTO distribution style
 **********************************************************************************************/
 CREATE OR REPLACE VIEW admin.v_generate_tbl_ddl
 AS
@@ -186,6 +188,7 @@ FROM pg_namespace AS n
    ,CASE WHEN c.reldiststyle = 0 THEN 'DISTSTYLE EVEN'
     WHEN c.reldiststyle = 1 THEN 'DISTSTYLE KEY'
     WHEN c.reldiststyle = 8 THEN 'DISTSTYLE ALL'
+    WHEN c.reldiststyle = 9 THEN 'DISTSTYLE AUTO'
     ELSE '<<Error - UNKNOWN DISTSTYLE>>'
     END AS ddl
   FROM pg_namespace AS n
@@ -251,7 +254,18 @@ from (SELECT
   UNION SELECT c.oid::bigint as table_id ,n.nspname AS schemaname, c.relname AS tablename, 600000000 AS seq, ';' AS ddl
   FROM  pg_namespace AS n
   INNER JOIN pg_class AS c ON n.oid = c.relnamespace
-  WHERE c.relkind = 'r' )
+  WHERE c.relkind = 'r' 
+  
+  UNION
+  --TABLE OWNERSHIP AS AN ALTER TABLE STATMENT
+  SELECT c.oid::bigint as table_id ,n.nspname AS schemaname, c.relname AS tablename, 600500000 AS seq, 
+  'ALTER TABLE ' + QUOTE_IDENT(n.nspname) + '.' + QUOTE_IDENT(c.relname) + ' owner to '+  QUOTE_IDENT(u.usename) +';' AS ddl
+  FROM  pg_namespace AS n
+  INNER JOIN pg_class AS c ON n.oid = c.relnamespace
+  INNER JOIN pg_user AS u ON c.relowner = u.usesysid
+  WHERE c.relkind = 'r'
+  
+  )
   UNION (
     SELECT c.oid::bigint as table_id,'zzzzzzzz' || n.nspname AS schemaname,
        'zzzzzzzz' || c.relname AS tablename,

@@ -21,6 +21,11 @@ diagnostics on your Cluster
 In the AdminViews directory, you will find a [collection of views](src/AdminViews) for managing
 your Cluster, generating Schema DDL, and ...
 
+# Stored Procedures
+
+In the StoredProcedures directory, you will find a [collection of stored procedures](src/StoredProcedures) for managing
+your Cluster or just to use as examples
+
 # Column Encoding Utility
 
 In order to get the best performance from your Redshift Database, you must ensure 
@@ -41,9 +46,18 @@ By turning on/off '--analyze-flag' and  '--vacuum-flag' parameters, you can run 
 or  'analyze-only' utility. This script can be scheduled to run VACUUM and ANALYZE as part of 
 regular maintenance/housekeeping activities, when there are less database activities (quiet period).
 
+# Cloud Data Warehousing Benchmark
+
+The [Cloud DW Benchmark](src/CloudDataWarehouseBenchmark) consists of a set of workloads used to characterize and study the performance of Redshift running a variety of analytic queries.   The DDL to set up the databases, including COPY utility commands  to load the data from a public S3 directory,  as well as the queries for both single user and multi-user throughput testing are provided.
+
 # Unload/Copy Utility
 
 The [Redshift Unload/Copy Utility](src/UnloadCopyUtility) helps you to migrate data between Redshift Clusters or Databases. It exports data from a source cluster to a location on S3, and all data is encrypted with Amazon Key Management Service. It then automatically imports the data into the configured Redshift Cluster, and will cleanup S3 if required. This utility is intended to be used as part of an ongoing scheduled activity, for instance run as part of a Data Pipeline Shell Activity (http://docs.aws.amazon.com/datapipeline/latest/DeveloperGuide/dp-object-shellcommandactivity.html).
+
+# Simple Replay Utility
+
+The [Simple Replay Utility](src/SimpleReplay) helps you to collect and replay cluster workloads. It reads the user activity log files (when audit is enabled) and generates sql files to be replayed. There are two replay tools. One that replays at a arbitrary concurrency and other that tries to reproduce the original cadence of work.
+
 
 # Automation Module
 

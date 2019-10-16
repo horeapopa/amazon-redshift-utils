@@ -241,7 +241,8 @@ def run_vacuum(conn,
                        + ', Unsorted_pct : ' + coalesce(unsorted :: varchar(10),'null') 
                        + ', Stats Off : ' + stats_off :: varchar(10)
                        + ' */ ;' as statement,
-                       table_name
+                       table_name,
+                       schema_name
                 FROM (SELECT schema_name,
                              table_name
                       FROM (SELECT TRIM(n.nspname) schema_name,
@@ -261,7 +262,7 @@ def run_vacuum(conn,
                               JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
                             WHERE l.userid > 1
                             AND   l.event_time >= dateadd(DAY,%s,CURRENT_DATE)
-                            AND   regexp_instr(solution,'.*VACUUM.reclaim deleted.') > 0
+                            AND   regexp_instr(solution,'.*VACUUM.*reclaim deleted.') > 0
                             GROUP BY TRIM(n.nspname),
                                      TRIM(c.relname)) anlyz_tbl
                       WHERE anlyz_tbl.qry_rnk <%s) feedback_tbl
@@ -289,7 +290,7 @@ def run_vacuum(conn,
 
     for vs in vacuum_statements:
         statements.append(vs[0])
-        statements.append("analyze %s.\"%s\"" % (schema_name, vs[1]))
+        statements.append("analyze %s.\"%s\"" % (vs[2], vs[1]))
 
     if not run_commands(conn, statements, cw=cw, cluster_name=cluster_name, suppress_errors=ignore_errors):
         if not ignore_errors:
